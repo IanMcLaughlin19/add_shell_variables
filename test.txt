@@ -1,0 +1,6 @@
+export test=true
+# my name is Ian
+
+
+
+export test3=new value

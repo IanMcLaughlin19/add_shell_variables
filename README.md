@@ -1,0 +1,1 @@
+Working on CLI tool to set permanent CLI variables. Currently works as a python script
