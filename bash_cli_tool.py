@@ -1,17 +1,22 @@
 import os
 import sys
+sys.path.append("/c/Users/ianm1/PycharmProjects/CLI_tool_project")
+import sqlite3
+from typing import List
 
-def get_path_to_profile():
-    home_dir = os.environ["HOME"]
-    shell = os.environ["SHELL"]
+
+def get_path_to_profile(check_file=True) -> str:
+    """
+    Get path to profile on a machine
+    :return: str path to the shell profile either .bashrc or .zshrc
+    """
+    home_dir = os.environ.get("HOME", "~")
+    shell = os.environ.get("SHELL", "bash")
     if "bash" in shell:
-        #bash_profile = home_dir + "/.bash_profile"
         bashrc = home_dir + "/.bashrc"
-        #if os.path.exists(bash_profile):
-        #    return bash_profile
         if os.path.exists(bashrc):
             return bashrc
-        else:
+        elif check_file:
             raise AssertionError("No .bashrc or .bash_profile file found in HOME directory: " + home_dir)
     elif "zsh" in shell:
         zsh_profile = home_dir + "/.zprofile"
@@ -20,15 +25,11 @@ def get_path_to_profile():
             return zsh_profile
         elif os.path.exists(zsh_profile):
             return zshrc
-        else:
+        elif check_file:
             raise AssertionError("No .zprofile or zshrc file found in Home directory: " + home_dir)
     else:
         AssertionError("Unsupported shell type: {0} expected either bash or zsh".format(shell))
 
-PATH_TO_PROFILE = get_path_to_profile()
-
-def append_or_replace_to_shell_profile(key: str, value: str):
-    append_or_replace_var_text(key, value, PATH_TO_PROFILE)
 
 def append_or_replace_var_text(key:str, value: str, path_to_profile: str) -> None:
     """
@@ -44,6 +45,21 @@ def append_or_replace_var_text(key:str, value: str, path_to_profile: str) -> Non
         replace_variable(line_number, key, value, path_to_profile)
         return
     add_variable_to_text(key, value, path_to_profile)
+
+def delete_var_in_txt(key: str, path_to_file: str) -> None:
+    """
+    Deletes a variable from text if it exist
+    :param key: the variable name to look for
+    :param path_to_file: path to the file where the variable is
+    :return: None, line file will be deleted if the variable exist
+    """
+    var_in_text = variable_in_text(key, path_to_file)
+    if var_in_text[0]:
+        lines = open(path_to_file, 'r').readlines()
+        lines.remove(var_in_text[1])
+        with open(path_to_file, 'w') as f:
+            f.writelines(lines)
+            f.close()
 
 def variable_in_text(key: str, path_to_file: str) -> tuple:
     """
@@ -65,6 +81,7 @@ def variable_in_text(key: str, path_to_file: str) -> tuple:
             if line_key == key:
                 return True, line_number
     return False, 0
+
 
 def replace_variable(line_number: int, key: str, value: str, path_to_file: str) -> None:
     """
@@ -103,7 +120,3 @@ def add_variable_to_text(key: str, value: str, path_to_file):
     file.write("\n")
     file.close()
 
-if __name__ == "__main__":
-    path = r"c\Users\ianm1\PycharmProjects\CLI_tool_project\test.txt"
-    linux_path = "/c/Users/ianm1/PycharmProjects/CLI_tool_project/test.txt"
-    append_or_replace_var_text("test3", "new value", linux_path)
